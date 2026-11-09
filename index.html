@@ -1,0 +1,819 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Mariam Zulla Portfolio</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Geist:wght@400;500;600&family=Geist+Mono:wght@400;500&display=swap">
+<style>
+/* Layout: two framed panes. Left = live radial clock (turns into the project sheet while a video plays). Right = the works, one per slide, scrolled vertically; click turns the image into its video. */
+:root{
+  --frame:#ECE6DF;
+  --paper:#FDF8F3;
+  --ink:#1A1512;
+  --muted:#8D837A;
+  --line:#CFC5BB;
+  --rule:rgba(26,21,18,.14);
+  --accent:#FF5B1F;
+  --tint-mix:62%;
+  --on-media:#FFFFFF;
+  --sheet:rgba(14,12,20,.8);
+  --grid-bg:#E8E3DE;
+  --mono:"Geist Mono",ui-monospace,"SFMono-Regular",Menlo,Consolas,monospace;
+  --sans:"Geist",ui-sans-serif,system-ui,-apple-system,"Segoe UI",sans-serif;
+}
+@media (prefers-color-scheme: dark){
+  :root:not([data-theme="light"]){
+    --frame:#0B0A09; --paper:#161311; --ink:#F4EDE5; --muted:#8A8076; --line:#3E3731; --rule:rgba(244,237,229,.14); --accent:#FF6A30; --tint-mix:14%; --grid-bg:#0F0D0C; color-scheme:dark;
+  }
+}
+:root[data-theme="dark"]{
+  --frame:#0B0A09; --paper:#161311; --ink:#F4EDE5; --muted:#8A8076; --line:#3E3731; --rule:rgba(244,237,229,.14); --accent:#FF6A30; --tint-mix:14%; --grid-bg:#0F0D0C; color-scheme:dark;
+}
+html,body{height:100%}
+body{background:var(--frame);color:var(--ink);font-family:var(--sans);-webkit-font-smoothing:antialiased;overflow:hidden}
+*{box-sizing:border-box}
+button{font:inherit;color:inherit}
+a{color:inherit}
+:focus-visible{outline:2px solid var(--accent);outline-offset:3px}
+.label{font-family:var(--mono);font-size:11.5px;letter-spacing:.08em;text-transform:uppercase}
+
+.app{
+  height:100%;display:grid;grid-template-columns:minmax(0,.72fr) minmax(0,1fr);gap:10px;
+  padding-block:10px;padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px));
+}
+
+/* ---------- left pane ---------- */
+.pane{--tint:var(--paper);position:relative;border-radius:10px;min-height:0;overflow:hidden;
+  background:color-mix(in srgb,var(--tint) var(--tint-mix),var(--paper));transition:background .8s ease}
+.pane > section{position:absolute;inset:0;transition:opacity .6s ease,transform .8s cubic-bezier(.2,.7,.2,1)}
+.clockview{display:grid;grid-template-rows:auto 1fr auto;padding:28px}
+.infoview{opacity:0;transform:translateY(16px);pointer-events:none;overflow:auto;padding:30px 28px 40px}
+.pane.info .clockview{opacity:0;pointer-events:none}
+.pane.info .infoview{opacity:1;transform:none;pointer-events:auto}
+.clockview header{text-align:center;display:grid;gap:6px}
+.clockview header .where{color:var(--muted)}
+.aboutview{opacity:0;pointer-events:none;overflow:hidden;display:grid;grid-template-rows:1fr auto;padding:28px}
+.pane.about .clockview,.pane.about .infoview{opacity:0;pointer-events:none}
+.pane.about .aboutview{opacity:1;pointer-events:auto}
+.polas{position:absolute;inset:0;pointer-events:none}
+.pola{position:absolute;margin:0;background:#fff;padding:5px 5px 16px;box-shadow:0 10px 30px rgba(30,20,10,.16),0 1px 3px rgba(30,20,10,.12);transform:translate(-50%,-50%) scale(.6) rotate(var(--r));opacity:0;transition:transform .7s cubic-bezier(.2,.9,.25,1.2),opacity .5s,filter 1.4s}
+.pola.in{transform:translate(-50%,-50%) scale(1) rotate(var(--r));opacity:1}
+.pola.away{filter:blur(3px);opacity:.55;transform:translate(-50%,-46%) scale(.94) rotate(var(--r))}
+.pola.gone{opacity:0;filter:blur(6px);transition:opacity .8s,filter .8s}
+.pola img{display:block;width:100%;aspect-ratio:3/4;object-fit:cover;max-width:100%}
+@keyframes drift{to{translate:0 -10px;rotate:1.5deg}}
+.atag{position:absolute;left:50%;top:30%;transform:translateX(-50%);display:flex;align-items:center;gap:8px;white-space:nowrap}
+.atag i{width:12px;height:12px;background:var(--accent);display:block}
+#arc{position:absolute;left:0;top:0;width:100%;height:100%;overflow:visible;pointer-events:none}
+#arc text{font-family:var(--sans);font-weight:600;font-size:60px;letter-spacing:-.03em;fill:var(--ink)}
+#arc tspan.new{fill:var(--muted);opacity:.55}
+.aboutview{cursor:none}
+.sq-cursor{position:absolute;left:0;top:0;width:14px;height:14px;background:var(--accent);pointer-events:none;transform:translate(-50%,-50%);opacity:0;transition:opacity .2s;z-index:3}
+.aboutview:hover .sq-cursor{opacity:1}
+@media (pointer:coarse){.sq-cursor{display:none}}
+.aboutview footer{position:relative;display:flex;align-items:end;grid-row:2}
+
+.aboutsheet{position:absolute;inset:0;z-index:5;background:var(--paper);color:var(--ink);overflow:auto;padding:96px 26px 48px;transform:translateY(100%);transition:transform .8s cubic-bezier(.7,0,.2,1);visibility:hidden}
+.aboutsheet.open{transform:none;visibility:visible}
+.stage.about .bottombar,.stage.about .cursor{display:none}
+.ab{display:grid;grid-template-columns:minmax(0,.8fr) minmax(0,1.2fr);column-gap:24px;max-width:860px;margin-inline:auto}
+.ab > *{min-width:0}
+.ab h2{grid-column:2;margin:0 0 56px;font-size:clamp(40px,5.2vw,72px);font-weight:600;letter-spacing:-.05em;line-height:.92;text-transform:uppercase;text-wrap:balance}
+.ab dt{grid-column:1;color:var(--muted);padding-top:3px}
+.ab dd{grid-column:2;margin:0 0 40px;font-size:15px;line-height:1.6;max-width:44ch}
+.ab dd p{margin:0 0 12px}
+.ab ul{list-style:none;margin:0;padding:0;display:grid;gap:3px}
+.ab .me{width:min(260px,100%);aspect-ratio:2/3;object-fit:cover;border-radius:10px;display:block}
+.ab a{color:var(--accent);text-decoration:none;word-break:break-all}
+.ab a:hover{text-decoration:underline}
+.ab .big{font-size:20px;letter-spacing:-.02em;line-height:1.35}
+.clockwrap{display:grid;place-items:center;min-height:0}
+#clock{width:100%;max-width:560px;max-height:100%;height:auto;overflow:visible}
+#clock .tick{font-family:var(--mono);font-size:11px;fill:var(--muted)}
+#clock .tick.now{fill:var(--accent)}
+#clock path{fill:none;stroke:var(--line);stroke-width:.75}
+#clock path.now{stroke:var(--accent);stroke-width:1.3}
+#clock .time{font-family:var(--sans);font-weight:600;font-size:60px;letter-spacing:-.045em;fill:var(--ink);paint-order:stroke;stroke:var(--paper);stroke-width:14px;stroke-linejoin:round}
+#clock .colon{animation:blink 1s steps(1) infinite}
+@keyframes blink{50%{opacity:.2}}
+.pulse{position:absolute;left:0;top:30%;width:14px;height:14px;background:var(--accent);transition:top .9s cubic-bezier(.6,0,.2,1)}
+.clockview footer{display:flex;align-items:end}
+.invert{background:none;border:0;padding:0;cursor:pointer;color:var(--ink)}
+.invert:hover{color:var(--accent)}
+
+.focus{display:flex;align-items:center;gap:8px;color:var(--muted)}
+.focus i{width:12px;height:12px;background:var(--accent);display:block}
+.infoview h1{font-size:clamp(34px,4.2vw,64px);font-weight:600;letter-spacing:-.045em;line-height:.95;margin:22px 0 14px;text-transform:uppercase;text-wrap:balance}
+.lead{font-size:16px;line-height:1.5;margin:0 0 34px;max-width:46ch;color:var(--ink);opacity:.8}
+.rows{display:grid;border-top:1px solid var(--rule)}
+.row{display:grid;grid-template-columns:minmax(0,.42fr) minmax(0,1fr);gap:18px;padding:16px 0 18px;border-bottom:1px solid var(--rule)}
+.row dt{color:var(--muted);padding-top:2px}
+.row dd{margin:0;font-size:15px;line-height:1.55;min-width:0}
+.row ul{list-style:none;margin:0;padding:0;display:grid;gap:3px}
+.row a{color:var(--accent);text-decoration:none;word-break:break-all}
+.row a:hover{text-decoration:underline}
+.infoview .back{margin-top:26px;background:none;border:0;padding:0;cursor:pointer;color:var(--muted)}
+.infoview .back:hover{color:var(--accent)}
+
+/* ---------- right: the works ---------- */
+.stage{position:relative;border-radius:10px;overflow:hidden;overflow:clip;background:#0d0c14;min-height:0;color:var(--on-media);isolation:isolate;touch-action:pan-y}
+.slide{position:absolute;inset:0;transition:transform 1s cubic-bezier(.7,0,.2,1)}
+.media{position:absolute;inset:0;cursor:pointer;overflow:hidden}
+.media img,.media video{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;object-position:50% 32%;transition:opacity .9s ease,transform 1.6s cubic-bezier(.2,.7,.2,1)}
+.media video{opacity:0}
+.media::after{content:"";position:absolute;inset:0;background:linear-gradient(rgba(8,6,16,.35),rgba(8,6,16,.18) 40%,rgba(8,6,16,.45));transition:opacity .9s;pointer-events:none}
+.slide.playing .media video{opacity:1}
+.slide.playing .media img{opacity:0;transform:scale(1.04)}
+.slide.playing .media::after{opacity:.35}
+.slide.contain .media img,.slide.contain .media video{object-fit:contain;object-position:50% 50%}
+.slide.light .media::after{display:none}
+.slide.light,.stage.light .topbar,.stage.light .bottombar,.stage.light .cursor{--on-media:#3A2E22;color:var(--on-media)}
+.stage.light .cursor{color:#fff}
+.stage{transition:color .6s}
+.partnav{position:absolute;inset:0;z-index:3;pointer-events:none;color:var(--on-media)}
+.partnav .pill{position:absolute;top:calc(50% + 44px);height:46px;padding:0 18px;font-size:12px;pointer-events:auto;font-family:var(--mono);letter-spacing:.08em;text-transform:uppercase;white-space:nowrap}
+.partnav .pnext{background:var(--accent);border-color:var(--accent);color:#fff;box-shadow:0 6px 20px color-mix(in srgb,var(--accent) 40%,transparent);animation:nudge 1.8s ease-in-out infinite}
+.partnav .pnext:hover{filter:brightness(1.08);background:var(--accent)}
+@keyframes nudge{0%,100%{transform:translateX(0)}50%{transform:translateX(6px)}}
+.partnav .pprev{left:22px}
+.partnav .pnext{right:22px}
+.partnav .pill:disabled{visibility:hidden}
+.plabel{position:absolute;left:50%;top:74px;transform:translateX(-50%);font-variant-numeric:tabular-nums;white-space:nowrap}
+
+.midrow{position:absolute;left:0;right:0;top:50%;transform:translateY(-50%);display:grid;grid-template-columns:auto 1fr auto;align-items:center;gap:16px;padding:0 26px;pointer-events:none;z-index:2;transition:opacity .5s}
+.slide.playing .center{opacity:0;transform:translateY(8px)}
+.center{justify-self:center;text-align:center;transition:opacity .5s,transform .6s;width:min(100%,560px)}
+.center h2{margin:0 0 10px;font-size:clamp(26px,3.3vw,48px);font-weight:600;letter-spacing:-.04em;line-height:.98;text-transform:uppercase;text-wrap:balance;text-shadow:0 1px 24px rgba(0,0,0,.25)}
+.center p{margin:0;font-size:14px;opacity:.85}
+.picker{display:grid;gap:12px}
+.pr{display:grid;grid-template-columns:minmax(0,1fr) 46px minmax(0,1fr);align-items:center;gap:18px;text-align:left}
+.pr .l{text-align:right}
+.pr span{font-size:13px;opacity:.65;letter-spacing:-.01em}
+.pr.main span{font-size:clamp(17px,1.6vw,22px);font-weight:600;letter-spacing:-.02em;opacity:1}
+.tk{display:grid;gap:7px;justify-items:center;opacity:1!important}
+.tk i{display:block;height:1px;width:16px;background:var(--on-media);opacity:.55}
+.tk i.on{width:46px;opacity:1}
+.topbar,.bottombar{position:absolute;left:0;right:0;z-index:6;display:flex;justify-content:space-between;gap:16px;padding:22px 26px;pointer-events:none;flex-wrap:wrap}
+.topbar{top:0}
+.bottombar{bottom:0;align-items:center}
+.topbar nav{display:flex;gap:24px}
+.topbar a,.bottombar button{pointer-events:auto}
+.topbar a{text-decoration:none;opacity:.6;transition:opacity .2s}
+.topbar a:hover,.topbar a[aria-current="page"]{opacity:1}
+#order{opacity:1}
+#order span{color:var(--accent)}
+.hint{opacity:.75;transition:opacity .4s}
+.ctrls{display:flex;align-items:center;gap:8px}
+.pill{background:color-mix(in srgb,currentColor 10%,transparent);border:1px solid color-mix(in srgb,currentColor 30%,transparent);color:var(--on-media);border-radius:999px;padding:7px 12px;cursor:pointer;backdrop-filter:blur(6px);-webkit-backdrop-filter:blur(6px)}
+.pill:hover{background:color-mix(in srgb,currentColor 20%,transparent)}
+.pill:disabled{opacity:.3;cursor:default}
+.count{font-variant-numeric:tabular-nums;opacity:.85;padding:0 4px}
+
+.cursor{position:absolute;z-index:4;left:0;top:0;pointer-events:none;padding:6px 10px;border-radius:999px;background:var(--accent);color:#fff;opacity:0;transform:translate(-50%,-150%);transition:opacity .2s;white-space:nowrap}
+@media (pointer:fine){.cursor.show{opacity:1}}
+
+/* projects */
+.sheet{position:absolute;inset:0;z-index:5;background:var(--grid-bg);overflow:auto;padding:66px 0 0;transform:translateY(100%);transition:transform .8s cubic-bezier(.7,0,.2,1);visibility:hidden}
+.sheet.open{transform:none;visibility:visible}
+.grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:6px}
+.tile{position:relative;aspect-ratio:4/3;border:0;padding:0;margin:0;overflow:hidden;border-radius:6px;background:#1b1917;cursor:pointer;max-width:100%;color:#fff}
+.tile.wide{grid-column:span 2;aspect-ratio:auto}
+
+.tile.wide img{object-position:50% 12%}
+.tile.gap{background:none;cursor:default;pointer-events:none}
+.tile img,.tile video{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;object-position:50% 35%;transition:transform .8s cubic-bezier(.2,.7,.2,1),opacity .5s}
+.tile video{opacity:0}
+.tile.on video{opacity:1}
+.tile:hover img,.tile:hover video{transform:scale(1.035)}
+.tile .cap{position:absolute;left:10px;bottom:10px;right:10px;text-align:left;opacity:0;transform:translateY(6px);transition:opacity .3s,transform .3s;text-shadow:0 1px 10px rgba(0,0,0,.5)}
+.tile:hover .cap,.tile:focus-visible .cap{opacity:1;transform:none}
+.lightbox{position:absolute;inset:0;z-index:8;background:rgba(10,9,8,.86);display:grid;place-items:center;padding:70px 26px 26px;cursor:zoom-out}
+.lightbox{grid-template-rows:minmax(0,1fr);grid-template-columns:minmax(0,1fr)}
+.lightbox img,.lightbox video{width:100%;height:100%;max-width:100%;object-fit:contain;cursor:default}
+.lightbox video{width:100%;background:#000}
+.lightbox .pill{position:absolute;top:50%;transform:translateY(-50%);width:52px;height:52px;padding:0;font-size:20px;color:#fff;background:rgba(255,255,255,.12);border:1px solid rgba(255,255,255,.35)}
+.lightbox .lbprev{left:18px}
+.lightbox .lbnext{right:18px;background:var(--accent);border-color:var(--accent)}
+.lbnote{position:absolute;left:26px;right:26px;bottom:10px;margin:0;text-align:center;color:#fff;opacity:.75;font-size:12px;line-height:1.45}
+.lbcount{position:absolute;left:0;right:0;bottom:18px;text-align:center;color:#fff;opacity:.8}
+.lightbox .x{position:absolute;top:70px;right:26px;background:none;border:0;color:#fff;cursor:pointer}
+.stage.sheetview .topbar{--on-media:var(--ink);color:var(--ink)}
+.stage.projects .bottombar,.stage.projects .cursor{display:none}
+.stage.projects .topbar{background:var(--grid-bg)}
+.stage.about .topbar{background:var(--paper)}
+
+.projview{opacity:0;pointer-events:none;overflow:auto;display:grid;grid-template-rows:auto 1fr auto;padding:28px;gap:24px}
+.pane.projects .clockview,.pane.projects .infoview{opacity:0;pointer-events:none}
+.pane.projects .projview{opacity:1;pointer-events:auto}
+.projview h1{margin:56px 0 22px;font-size:clamp(46px,6vw,92px);font-weight:600;letter-spacing:-.055em;line-height:.9}
+.projview .txt{display:grid;gap:12px;max-width:46ch;font-size:15px;line-height:1.6}
+.projview .txt p{margin:0}
+.projview .txt p:last-child{color:var(--accent)}
+.projfoot{display:flex;justify-content:space-between;align-items:end;gap:16px}
+
+/* ---------- phones ---------- */
+@media (max-width:860px){
+  html,body{height:auto;overflow:auto}
+  .app{grid-template-columns:1fr;height:auto}
+  .pane{height:auto;min-height:480px}
+  .pane > section{position:relative;inset:auto}
+  .pane .infoview{display:none}
+  .pane.info .clockview{display:none}
+  .pane.info .infoview{display:block}
+  .pane .aboutview{display:none}
+  .pane.about .clockview,.pane.about .infoview{display:none}
+  .pane.about .aboutview{display:grid;min-height:520px}
+  .ab{grid-template-columns:1fr}
+  .ab h2,.ab dt,.ab dd{grid-column:1}
+  .ab dt{margin-bottom:8px}
+  .aboutsheet{padding:80px 18px 40px}
+  .clockview{min-height:480px;padding:22px 18px}
+  .infoview{padding:24px 18px 32px}
+  .stage{height:88svh;min-height:540px;touch-action:pan-y}
+  .midrow{grid-template-columns:1fr;padding:0 16px}
+  .midrow .num{display:none}
+  .pr{gap:10px;grid-template-columns:minmax(0,1fr) 30px minmax(0,1fr)}
+  .tk i.on{width:30px}
+  .topbar,.bottombar{padding:18px}
+  .topbar nav{gap:16px}
+  .sheet{padding:66px 0 0}
+  .grid{grid-template-columns:repeat(2,minmax(0,1fr))}
+  .tile.gap{display:none}
+  .tile .cap{opacity:1;transform:none}
+  .pane .projview{display:none}
+  .pane.projects .clockview,.pane.projects .infoview{display:none}
+  .pane.projects .projview{display:grid;position:relative}
+  .hint{display:none}
+}
+@media (prefers-reduced-motion:reduce){
+  *{transition:none!important;animation:none!important}
+}
+</style>
+</head>
+<body>
+
+<div class="app">
+  <!-- LEFT -->
+  <div class="pane" id="pane">
+    <section class="clockview" aria-label="Local time">
+      <header><span class="label" id="who">Mariam Zulla, AI Creator</span><span class="label where">Armenia</span></header>
+      <div class="clockwrap"><svg id="clock" viewBox="0 0 640 640" role="img" aria-label="Current local time"></svg></div>
+      <div class="pulse" id="pulse" aria-hidden="true"></div>
+      <footer><button class="invert label" id="invert" type="button">Invert color</button></footer>
+    </section>
+    <section class="infoview" id="info" aria-live="polite"></section>
+    <section class="projview" aria-label="Projects">
+      <div>
+        <h1>Projects</h1>
+        <div class="txt">
+          <p>What once existed only in our imagination, what once seemed impossible to bring to life, is now within reach — and can be created with remarkable quality.</p>
+          <p>But this is about more than just tools or mastering technology. It's about creating, imagining, and bringing ideas to life.</p>
+          <p>Everything begins with a thought. Step by step, that thought takes shape, becomes a vision, and eventually turns into reality.</p>
+          <p>I'm happy to share my creative journey and work with you. And the best is yet to come.</p>
+        </div>
+      </div>
+      <div></div>
+      <div class="projfoot">
+        <button class="invert label" type="button">Invert color</button>
+      </div>
+    </section>
+    <section class="aboutview" aria-label="Characters and locations">
+      <div class="polas" id="polas"></div>
+      <div class="sq-cursor" id="sqCursor" aria-hidden="true"></div>
+      <svg id="arc" viewBox="0 0 600 700" preserveAspectRatio="xMidYMid slice" aria-hidden="true">
+        <defs>
+          <linearGradient id="arcFade" x1="0" x2="1" y1="0" y2="0">
+            <stop offset="0" stop-color="var(--ink)"/><stop offset=".72" stop-color="var(--ink)"/><stop offset="1" stop-color="var(--muted)" stop-opacity=".35"/>
+          </linearGradient>
+          <path id="arcPath" d="M-320,470 C-20,560 330,540 560,380 S820,120 980,40"/>
+        </defs>
+        <text text-anchor="end"><textPath href="#arcPath" id="arcText" startOffset="52%"></textPath></text>
+      </svg>
+      <footer><button class="invert label" type="button">Invert color</button></footer>
+    </section>
+  </div>
+
+  <!-- RIGHT -->
+  <div class="stage" id="stage" aria-label="Works">
+    <div id="slides"></div>
+
+    <div class="topbar label">
+      <nav>
+        <a href="#work" data-view="work" aria-current="page">Work</a>
+        <a href="#about" data-view="about">About</a>
+        <a href="#projects" data-view="projects">Projects</a>
+      </nav>
+      <a id="order" href="mailto:zulalyanmariam@gmail.com" target="_blank" rel="noopener">Order a project <span>↗</span></a>
+    </div>
+
+    <div class="bottombar label">
+      <span class="hint" id="hint">Click the image to play · Scroll for next</span>
+      <div class="ctrls">
+        <button class="pill" type="button" id="sound" hidden>Sound off</button>
+        <button class="pill" type="button" id="prev" aria-label="Previous work">↑</button>
+        <span class="count" id="count">01 / 04</span>
+        <button class="pill" type="button" id="next" aria-label="Next work">↓</button>
+      </div>
+    </div>
+
+    <div class="cursor label" id="cursor">Play ▶</div>
+
+    <div class="aboutsheet" id="aboutSheet" aria-hidden="true">
+      <dl class="ab">
+        <h2>A bit about me</h2>
+        <dt class="label">Info</dt>
+        <dd><p class="big">Hi, I'm Mariam Zulla — an AI Creator passionate about bringing imaginative ideas to life.</p>
+          <p>I create AI-powered visuals, cinematic videos, and creative concepts that blend art, storytelling, and technology.</p></dd>
+        <dt class="label" aria-hidden="true"></dt>
+        <dd><img class="me" src="assets/about/mariam.webp" alt="Mariam Zulla" loading="lazy"></dd>
+        <dt class="label">Education</dt>
+        <dd>Completed Art Directing and Art Directing Advanced courses at HUVA Academy, under the mentorship of AIwithAni.</dd>
+        <dt class="label">Creative focus</dt>
+        <dd><ul><li>AI Visual Creation</li><li>AI Video Production</li><li>Commercial Films</li><li>Short Films</li><li>Social Media Content</li><li>Creative Storytelling</li></ul></dd>
+        <dt class="label">Capabilities</dt>
+        <dd><ul><li>AI Image Generation</li><li>AI Video Generation</li><li>Art Direction</li><li>Visual Storytelling</li><li>AI Animation</li><li>Creative Concepts</li><li>Commercial Content</li></ul></dd>
+        <dt class="label">Let's talk</dt>
+        <dd><p class="big">Have a project in mind?<br>Let's create something extraordinary together.</p></dd>
+        <dt class="label">Contact</dt>
+        <dd><a id="aboutMail" href="mailto:zulalyanmariam@gmail.com" target="_blank" rel="noopener">zulalyanmariam@gmail.com</a></dd>
+        <dt class="label">Social</dt>
+        <dd><a id="insta" href="https://www.instagram.com/" target="_blank" rel="noopener">Instagram ↗</a></dd>
+      </dl>
+    </div>
+
+    <div class="sheet" id="projects" aria-hidden="true">
+      <div class="grid" id="grid"></div>
+    </div>
+  </div>
+</div>
+
+<script>
+/* ================= EDIT YOUR INFO HERE ================= */
+const SITE = {
+  who: "Mariam Zulla, AI Creator",
+  email: "zulalyanmariam@gmail.com",
+  timeZone: "Asia/Yerevan",
+};
+
+const ABOUT = {
+  eyebrow: "About",
+  title: "Your imagination, without limits.",
+  lead: "From characters and worlds to stories yet to be told.",
+  rows: [
+    ["What I do", "I turn ideas into visual experiences through AI, creativity, and storytelling. From concept development and character creation to cinematic videos and commercial campaigns, I bring imaginative worlds to life."],
+    ["Services", ["AI Image Generation", "AI Video Production", "Art Direction", "Character & Environment Design", "Commercial Films & Advertising", "Short Films & Storytelling", "Social Media Content"]],
+    ["Creative approach", "Every project starts with an idea. I combine visual storytelling, artistic direction, and AI technology to transform concepts into unique visual experiences."],
+    ["Let's work together", "Have an idea in mind? Let's bring it to life.", "email"],
+  ],
+};
+
+/* Shown with spec (unofficial) brand work */
+const DISCLAIMER = brand => `Independent spec concept created for portfolio purposes only. Not commissioned, sponsored, approved or endorsed by ${brand}, and not an official collaboration. ${brand} and related trademarks belong to their respective owners.`;
+/* One object per work. center: "picker" | {title, sub} | null */
+const WORKS = [
+  { no: "01", year: "2026", tint: "#D6E3EE",
+    poster: "assets/poster-01.webp", video: "assets/video-01.mp4", alt: "Portrait with painted poppies and daisies",
+    center: "picker", info: ABOUT, card: "AI Visuals" },
+  { no: "02", year: "2026", tint: "#D2DFEC",
+    poster: "assets/poster-02.webp", video: "assets/video-02.mp4", alt: "Woman walking, wrapped in giant painted flowers",
+    center: { title: "From painting to motion", sub: "Inspired by Martiros Saryan’s artwork." },
+    info: { eyebrow: "02 · 2026", title: "From painting to motion", lead: "Inspired by Martiros Saryan’s artwork.",
+      rows: [["Year", "2026"], ["Category", "AI Video"], ["Inspiration", "Martiros Saryan"]] }, card: "AI Video" },
+  { no: "03", year: "2026", tint: "#F1D8CC",
+    poster: "assets/poster-03.webp", video: "assets/video-03.mp4", alt: "Woman in a green coat among painted lilacs",
+    center: { title: "Art reimagined", sub: "Martiros Saryan — AI Animation." },
+    info: { eyebrow: "03 · 2026", title: "Art reimagined", lead: "Martiros Saryan — AI Animation.",
+      rows: [["Year", "2026"], ["Category", "AI Animation"], ["Inspiration", "Martiros Saryan"]] }, card: "AI Animation" },
+  { no: "04", year: "2026", tint: "#E9DCC6", sound: true,
+    poster: "assets/poster-04.webp", video: "assets/video-04.mp4", alt: "Hermès Cuivreries scarf commercial, rider in a helmet",
+    center: null,
+    info: { eyebrow: "04 · 2026", title: "Hermès «Cuivreries» Scarf", lead: "Spec commercial concept.",
+      rows: [["Year", "2026"], ["Category", "Commercial Film"], ["Type", "Spec concept · unofficial"], ["Disclaimer", DISCLAIMER("Hermès")]] }, card: "Commercial Film" },
+  /* A work with several parts: arrows switch parts, a click plays that part's video. */
+  { no: "05", year: "2026", tint: "#EFE3CF", sound: true, light: true, fit: "contain", bg: "#F0E9DF",
+    parts: [
+      { poster: "assets/poster-05-1.webp", video: "assets/video-05-1.mp4", alt: "Christmas Film, part 1: two children looking at a toy train" },
+      { poster: "assets/poster-05-2.webp", video: "assets/video-05-2.mp4", alt: "Christmas Film, part 2: “Will they steal it?”" },
+      { poster: "assets/poster-05-3.webp", video: "assets/video-05-3.mp4", alt: "Christmas Film, part 3: “Honesty is worth more than any toy.”" },
+    ],
+    center: null,
+    info: { eyebrow: "05 · 2026", title: "Christmas Film", lead: "In 90s style. A short film in three parts.",
+      rows: [["Parts", "3"], ["Year", "2026"], ["Category", "Short Film"], ["Role", "Concept · Direction · AI Production"]] }, card: "Short Film" },
+  { no: "06", year: "2026", tint: "#EDE2D2", sound: true, light: true, fit: "contain", bg: "#F0E9E0",
+    poster: "assets/poster-06.webp", video: "assets/video-06.mp4", alt: "Dior fashion editorial: four models on museum steps",
+    center: null,
+    info: { eyebrow: "06 · 2026", title: "Dior", lead: "“When art meets art.” Fashion editorial, spec concept.",
+      rows: [["Year", "2026"], ["Category", "Fashion Editorial"], ["Type", "Spec concept · unofficial"], ["Role", "Concept · Direction · AI Production"], ["Disclaimer", DISCLAIMER("Dior")]] }, card: "Fashion Editorial" },
+  { no: "07", year: "2026", tint: "#3A3836", sound: true, fit: "contain", bg: "#111111",
+    poster: "assets/poster-07.webp", video: "assets/video-07.mp4", alt: "Social video: children's hobbies beside their adult lives",
+    center: null,
+    info: { eyebrow: "07 · 2026", title: "Don’t choose for them.", lead: "Choose to stand beside them. A film by Mariam Zulla.",
+      rows: [["Year", "2026"], ["Category", "Social Video"], ["Role", "Concept · Direction · AI Production"]] }, card: "Social Video" },
+];
+const INSTAGRAM = "https://www.instagram.com/";
+/* Small photos on the About page (characters, locations). Add or remove files freely. */
+const ABOUT_PHOTOS = ["p01","p02","p03","p04","p05","p06","p07","p08","p09","p11","p12","p13","p14","p15","p16"].map(n => `assets/about/${n}.webp`);
+const ARC_WORDS = "From imagination to reality. Imagine it. Create it. Bring it to life. Dream beyond limits. Create beyond imagination. Every great story begins with an idea.";
+const PICKER = [["AI Visuals", "AI Videos"], ["Commercial Films", "Short Films"], ["Social Media Content", "Visual Trends"]];
+/* ======================================================= */
+
+const $ = id => document.getElementById(id);
+const esc = s => String(s).replace(/[&<>"]/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
+WORKS.forEach(w => { w.parts = w.parts || [{ poster: w.poster, video: w.video, alt: w.alt }]; w.part = 0; });
+$("who").textContent = SITE.who;
+$("order").href = "mailto:" + SITE.email;
+
+/* ---------- radial clock: one label per second, the ring grows through the minute ---------- */
+const svg = $("clock"), NS = "http://www.w3.org/2000/svg";
+const C = {x: 320, y: 320}, R = 245;
+const reduce = matchMedia("(prefers-reduced-motion: reduce)").matches;
+const paths = [], ticks = [];
+for (let i = 0; i < 60; i++) {
+  const p = document.createElementNS(NS, "path"); svg.appendChild(p); paths.push(p);
+}
+for (let i = 0; i < 60; i++) {
+  const t = document.createElementNS(NS, "text");
+  t.setAttribute("class", "tick"); t.setAttribute("text-anchor", "middle"); t.setAttribute("dominant-baseline", "middle");
+  t.textContent = String(i).padStart(2, "0");
+  svg.appendChild(t); ticks.push(t);
+}
+const timeText = document.createElementNS(NS, "text");
+timeText.setAttribute("class", "time"); timeText.setAttribute("x", C.x); timeText.setAttribute("y", C.y + 21); timeText.setAttribute("text-anchor", "middle");
+timeText.innerHTML = '<tspan id="hh">00</tspan><tspan class="colon" dx="3" dy="-4">:</tspan><tspan id="mm" dx="3" dy="4">00</tspan>';
+svg.appendChild(timeText);
+
+const fmt = new Intl.DateTimeFormat("en-GB", {timeZone: SITE.timeZone, hour: "2-digit", minute: "2-digit", second: "2-digit", hourCycle: "h23"});
+const ease = x => 1 - Math.pow(1 - x, 3);
+let lastSec = -1;
+/* Use the real time from the web server, not the visitor's computer clock (which can be set wrong). */
+let clockOffset = 0;
+fetch("assets/poster-01.webp?t=" + Date.now(), {method: "HEAD", cache: "no-store"})
+  .then(r => { const d = Date.parse(r.headers.get("date")); if (d) clockOffset = d - Date.now(); })
+  .catch(() => {});
+function drawClock() {
+  const now = new Date(Date.now() + clockOffset);
+  const parts = Object.fromEntries(fmt.formatToParts(now).map(p => [p.type, p.value]));
+  const s = +parts.second, e = reduce ? 1 : ease(now.getMilliseconds() / 1000);
+  if (s !== lastSec) {
+    lastSec = s;
+    $("hh").textContent = parts.hour; $("mm").textContent = parts.minute;
+    $("pulse").style.top = (12 + (s / 59) * 76) + "%";
+  }
+  const k = s + e;
+  for (let i = 0; i < 60; i++) {
+    const t = ticks[i], p = paths[i];
+    if (i > s) { t.style.display = p.style.display = "none"; continue; }
+    t.style.display = p.style.display = "";
+    const isNew = i === s;
+    const a = (176 - (k - 1 - i) * 6) * Math.PI / 180;
+    const r = isNew ? R + (1 - e) * 46 : R;
+    const lx = C.x + r * Math.cos(a), ly = C.y - r * Math.sin(a);
+    t.setAttribute("x", lx.toFixed(1)); t.setAttribute("y", ly.toFixed(1));
+    t.style.opacity = isNew ? Math.max(.15, e) : 1;
+    t.classList.toggle("now", isNew);
+    const ea = (R - 16), ex = C.x + ea * Math.cos(a), ey = C.y - ea * Math.sin(a);
+    const ca = a + .75, cr = R * .42;
+    const cx = C.x + cr * Math.cos(ca), cy = C.y - cr * Math.sin(ca);
+    p.setAttribute("d", `M${C.x},${C.y} Q${cx.toFixed(1)},${cy.toFixed(1)} ${ex.toFixed(1)},${ey.toFixed(1)}`);
+    p.style.opacity = isNew ? e : 1;
+    p.classList.toggle("now", isNew);
+  }
+}
+(function loop() { drawClock(); requestAnimationFrame(loop); })();
+
+/* ---------- invert color ---------- */
+const root = document.documentElement;
+document.querySelectorAll(".invert").forEach(b => b.addEventListener("click", () => {
+  const dark = root.dataset.theme ? root.dataset.theme === "dark" : matchMedia("(prefers-color-scheme: dark)").matches;
+  root.dataset.theme = dark ? "light" : "dark";
+}));
+
+/* ---------- left pane: project sheet ---------- */
+const pane = $("pane"), info = $("info");
+function showInfo(data, tint) {
+  info.innerHTML = `
+    <div class="focus label"><i></i>${esc(data.eyebrow || "")}</div>
+    <h1>${esc(data.title)}</h1>
+    ${data.lead ? `<p class="lead">${esc(data.lead)}</p>` : ""}
+    <dl class="rows">${data.rows.map(([k, v, kind]) => `
+      <div class="row"><dt class="label">${esc(k)}</dt><dd>${
+        Array.isArray(v) ? `<ul>${v.map(x => `<li>${esc(x)}</li>`).join("")}</ul>` : esc(v)
+      }${kind === "email" ? `<br><a href="mailto:${esc(SITE.email)}" target="_blank" rel="noopener">${esc(SITE.email)}</a>` : ""}</dd></div>`).join("")}
+    </dl>
+    <button class="back label" type="button" id="backToClock">← Back to the clock</button>`;
+  info.scrollTop = 0;
+  pane.style.setProperty("--tint", tint || "var(--paper)");
+  pane.classList.add("info");
+  $("backToClock").onclick = () => { stopAll(); if (location.hash === "#about") location.hash = "#work"; setNav("work"); };
+}
+function showClock() {
+  pane.classList.remove("info");
+  pane.style.setProperty("--tint", "var(--paper)");
+}
+
+/* ---------- slides ---------- */
+const slidesEl = $("slides");
+slidesEl.innerHTML = WORKS.map((w, i) => `
+  <article class="slide${w.light ? " light" : ""}${w.fit === "contain" ? " contain" : ""}" data-i="${i}" aria-label="Work ${w.no}"${w.bg ? ` style="background:${w.bg}"` : ""}>
+    <div class="media" role="button" tabindex="0" aria-label="Play video ${w.no}">
+      <img src="${w.parts[0].poster}" alt="${esc(w.parts[0].alt)}" ${i ? 'loading="lazy"' : ""}>
+      <video ${w.parts[0].video ? `src="${w.parts[0].video}"` : ""} muted loop playsinline preload="${i < 2 ? "metadata" : "none"}"></video>
+    </div>
+    ${w.parts.length > 1 ? `<div class="partnav">
+      <button class="pill pprev" type="button" aria-label="Previous part" disabled>← Part 1</button>
+      <span class="label plabel">Part 1 / ${w.parts.length}</span>
+      <button class="pill pnext" type="button" aria-label="Next part">Part 2 →</button>
+    </div>` : ""}
+    <div class="midrow">
+      <span class="label num">${w.no}</span>
+      <div class="center">${
+        w.center === "picker" ? `<div class="picker">${PICKER.map((r, j) => `
+            <div class="pr${j === 1 ? " main" : ""}"><span class="l">${r[0]}</span><span class="tk">${j === 1 ? '<i class="on"></i>' : "<i></i><i></i><i></i>"}</span><span>${r[1]}</span></div>`).join("")}
+          </div>`
+        : w.center ? `<h2>${esc(w.center.title)}</h2><p>${esc(w.center.sub)}</p>` : ""
+      }</div>
+      <span class="label num">${w.year}</span>
+    </div>
+  </article>`).join("");
+const slides = [...slidesEl.children];
+let current = 0, playingIdx = -1;
+
+function layout() {
+  slides.forEach((s, i) => { s.style.transform = `translateY(${(i - current) * 100}%)`; s.setAttribute("aria-hidden", String(i !== current)); });
+  $("count").textContent = `${WORKS[current].no} / ${String(WORKS.length).padStart(2, "0")}`;
+  $("prev").disabled = current === 0;
+  $("next").disabled = current === WORKS.length - 1;
+  updateLight();
+  const nxt = slides[current + 1]?.querySelector("video");
+  if (nxt) nxt.preload = "metadata";
+}
+function goTo(i) {
+  i = Math.max(0, Math.min(WORKS.length - 1, i));
+  if (i === current) return;
+  stopAll();
+  current = i; layout();
+}
+function play(i) {
+  stopAll();
+  const s = slides[i], v = s.querySelector("video"), w = WORKS[i];
+  const pi = w.parts.length > 1 ? { ...w.info, eyebrow: `${w.no} · ${w.year} · Part ${w.part + 1} / ${w.parts.length}` } : w.info;
+  if (!w.parts[w.part].video) {
+    showInfo(pi, w.tint); setNav("work");
+    $("hint").textContent = "The video for this part is coming soon";
+    return;
+  }
+  s.classList.add("playing"); playingIdx = i;
+  v.currentTime = 0; v.muted = !w.sound;
+  v.play().catch(() => { v.muted = true; v.play().catch(() => {}); });
+  showInfo(pi, w.tint);
+  setNav(w.info === ABOUT ? "about" : "work");
+  $("sound").hidden = false; $("sound").textContent = v.muted ? "Sound off" : "Sound on";
+  $("hint").textContent = "Click again to return to the image";
+  $("cursor").textContent = "Back to image";
+}
+function stopAll() {
+  slides.forEach(s => { s.classList.remove("playing"); const v = s.querySelector("video"); v.pause(); });
+  playingIdx = -1;
+  showClock();
+  $("sound").hidden = true;
+  $("hint").textContent = "Click the image to play · Scroll for next";
+  $("cursor").textContent = "Play ▶";
+}
+slides.forEach((s, i) => {
+  const m = s.querySelector(".media");
+  const toggle = () => playingIdx === i ? stopAll() : play(i);
+  m.addEventListener("click", toggle);
+  m.addEventListener("keydown", e => { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); toggle(); } });
+});
+function setPart(i, p) {
+  const w = WORKS[i], s = slides[i];
+  if (p < 0 || p >= w.parts.length || p === w.part) return;
+  stopAll(); w.part = p;
+  const part = w.parts[p], img = s.querySelector("img"), v = s.querySelector("video");
+  img.style.opacity = 0;
+  setTimeout(() => {
+    img.src = part.poster; img.alt = part.alt;
+    if (part.video) v.src = part.video; else v.removeAttribute("src");
+    img.style.opacity = "";
+  }, 350);
+  s.querySelector(".plabel").textContent = `Part ${p + 1} / ${w.parts.length}`;
+  s.querySelector(".pprev").disabled = p === 0;
+  s.querySelector(".pnext").disabled = p === w.parts.length - 1;
+  s.querySelector(".pprev").textContent = `← Part ${Math.max(1, p)}`;
+  s.querySelector(".pnext").textContent = `Part ${Math.min(w.parts.length, p + 2)} →`;
+}
+slides.forEach((s, i) => {
+  s.querySelector(".pprev")?.addEventListener("click", () => setPart(i, WORKS[i].part - 1));
+  s.querySelector(".pnext")?.addEventListener("click", () => setPart(i, WORKS[i].part + 1));
+});
+$("sound").addEventListener("click", () => {
+  const v = slides[playingIdx]?.querySelector("video"); if (!v) return;
+  v.muted = !v.muted; $("sound").textContent = v.muted ? "Sound off" : "Sound on";
+});
+$("prev").addEventListener("click", () => goTo(current - 1));
+$("next").addEventListener("click", () => goTo(current + 1));
+
+/* scroll / keys / swipe */
+const stage = $("stage");
+stage.addEventListener("scroll", () => { stage.scrollTop = 0; stage.scrollLeft = 0; });
+let wheelLock = 0, acc = 0;
+stage.addEventListener("wheel", e => {
+  if (view !== "work") return;
+  e.preventDefault();
+  const now = Date.now();
+  if (now < wheelLock) return;
+  acc += e.deltaY;
+  if (Math.abs(acc) > 40) { goTo(current + Math.sign(acc)); acc = 0; wheelLock = now + 1100; }
+}, {passive: false});
+addEventListener("keydown", e => {
+  if (view !== "work") return;
+  if (e.key === "ArrowRight") setPart(current, WORKS[current].part + 1);
+  if (e.key === "ArrowLeft") setPart(current, WORKS[current].part - 1);
+  if (e.key === "ArrowDown" || e.key === "PageDown") { e.preventDefault(); goTo(current + 1); }
+  if (e.key === "ArrowUp" || e.key === "PageUp") { e.preventDefault(); goTo(current - 1); }
+});
+let tx = 0, ty = 0;
+stage.addEventListener("touchstart", e => { tx = e.touches[0].clientX; ty = e.touches[0].clientY; }, {passive: true});
+stage.addEventListener("touchend", e => {
+  const dx = e.changedTouches[0].clientX - tx, dy = e.changedTouches[0].clientY - ty;
+  if (Math.abs(dx) > 50 && Math.abs(dx) > Math.abs(dy)) {
+    const w = WORKS[current], d = dx < 0 ? 1 : -1;
+    if (w.parts.length > 1 && w.parts[w.part + d]) setPart(current, w.part + d); else goTo(current + d);
+  }
+}, {passive: true});
+
+/* custom cursor label */
+const cursor = $("cursor");
+stage.addEventListener("pointermove", e => {
+  const r = stage.getBoundingClientRect();
+  cursor.style.left = (e.clientX - r.left) + "px"; cursor.style.top = (e.clientY - r.top) + "px";
+  cursor.classList.toggle("show", !!e.target.closest(".media") && view !== "projects");
+});
+stage.addEventListener("pointerleave", () => cursor.classList.remove("show"));
+
+/* order: open mail + show the address */
+/* first click shows + copies the address; a second click opens the mail app in a new window */
+let orderShown = false;
+$("order").addEventListener("click", e => {
+  if (orderShown) return;
+  e.preventDefault(); orderShown = true;
+  $("order").innerHTML = `${esc(SITE.email)} <span>↗</span>`;
+  try { navigator.clipboard?.writeText(SITE.email).then(() => { $("hint").textContent = "Email copied"; }).catch(() => {}); } catch (_) {}
+});
+
+/* ================= PROJECTS PAGE =================
+   Separate from WORK. Add a project: put files in assets/projects (thumb) and assets (video), then add a line here. */
+const PROJECTS = [
+  { title: "Christmas Film · Part 1", type: "Short film", thumb: "assets/projects/christmas-1.webp", video: "assets/video-05-1.mp4" },
+  { title: "Christmas Film · Part 2", type: "Short film", thumb: "assets/projects/christmas-2.webp", video: "assets/video-05-2.mp4" },
+  { title: "Christmas Film · Part 3", type: "Short film", thumb: "assets/projects/christmas-3.webp", video: "assets/video-05-3.mp4" },
+  { gap: true },
+  { title: "Dior · When art meets art", type: "Spec concept · unofficial", note: DISCLAIMER("Dior"), thumb: "assets/projects/dior.webp", video: "assets/video-06.mp4" },
+  { title: "Trend", type: "Social video", thumb: "assets/projects/trend.webp", video: "assets/projects/trend.mp4" },
+  { title: "Me & 4 Bags", type: "Social video", thumb: "assets/projects/bags.webp", video: "assets/projects/bags.mp4" },
+  { title: "Hermès «Cuivreries» Scarf", type: "Spec ad · unofficial", note: DISCLAIMER("Hermès"), thumb: "assets/poster-04.webp", video: "assets/video-04.mp4", wide: true },
+  { title: "Real to Animated", type: "AI video", thumb: "assets/projects/collage.webp", video: "assets/projects/collage.mp4" },
+  { title: "Styling Film", type: "Social video", thumb: "assets/projects/done.webp", video: "assets/projects/done.mp4" },
+  { title: "L'Amélie", type: "AI animation", thumb: "assets/projects/amelie.webp", video: "assets/projects/amelie.mp4" },
+  { gap: true },
+  /* a photo series: click opens a carousel with arrows */
+  { title: "Gold & Pearls", type: "Photo series · 4 images", thumb: "assets/series/s22.webp", wide: true, pos: "50% 40%",
+    images: ["assets/series/s22.webp", "assets/series/s23.webp", "assets/series/s24.webp", "assets/series/s25.webp"] },
+];
+/* ================================================= */
+const grid = $("grid");
+grid.innerHTML = PROJECTS.map((t, n) => t.gap ? '<div class="tile gap" aria-hidden="true"></div>' : `
+  <button class="tile${t.wide ? " wide" : ""}" type="button" data-n="${n}" aria-label="Play ${esc(t.title)}">
+    <img src="${t.thumb}" alt="" loading="lazy"${t.pos ? ` style="object-position:${t.pos}"` : ""}>
+    ${t.video ? `<video muted loop playsinline preload="none" data-src="${t.video}"></video>` : ""}
+    <span class="cap label">${esc(t.title)} · ${esc(t.type)}</span>
+  </button>`).join("");
+grid.addEventListener("pointerover", e => {
+  const b = e.target.closest(".tile[data-n]"); if (!b) return;
+  const v = b.querySelector("video");
+  if (v && matchMedia("(pointer:fine)").matches) { if (!v.src) v.src = v.dataset.src; v.play().then(() => b.classList.add("on")).catch(() => {}); }
+});
+grid.addEventListener("pointerout", e => {
+  const b = e.target.closest(".tile[data-n]"); if (!b || b.contains(e.relatedTarget)) return;
+  const v = b.querySelector("video"); if (v) { v.pause(); b.classList.remove("on"); }
+});
+/* click: watch the full video with sound, right here — or flip through a photo series */
+grid.addEventListener("click", e => {
+  const b = e.target.closest(".tile[data-n]"); if (!b) return;
+  openLightbox(PROJECTS[+b.dataset.n]);
+});
+function openLightbox(t) {
+  grid.querySelectorAll("video").forEach(v => v.pause());
+  const lb = document.createElement("div");
+  lb.className = "lightbox";
+  const close = () => { lb.remove(); removeEventListener("keydown", onKey); };
+  if (t.images) {
+    let k = 0;
+    lb.innerHTML = `<img alt=""><button class="x label" type="button">Close ✕</button>
+      <button class="pill lbprev" type="button" aria-label="Previous image">←</button>
+      <button class="pill lbnext" type="button" aria-label="Next image">→</button>
+      <span class="lbcount label"></span>`;
+    const show = d => { k = (k + d + t.images.length) % t.images.length; lb.querySelector("img").src = t.images[k]; lb.querySelector(".lbcount").textContent = `${t.title} · ${k + 1} / ${t.images.length}`; };
+    lb.querySelector(".lbprev").onclick = () => show(-1);
+    lb.querySelector(".lbnext").onclick = () => show(1);
+    t.images.slice(1).forEach(src => { const im = new Image(); im.src = src; });
+    show(0);
+    lb._show = show;
+  } else {
+    lb.innerHTML = `<video src="${t.video}" controls autoplay playsinline></video><button class="x label" type="button">Close ✕</button>${t.note ? `<p class="lbnote">${esc(t.note)}</p>` : ""}`;
+  }
+  lb.addEventListener("click", ev => { if (ev.target === lb || ev.target.closest(".x")) close(); });
+  let sx = 0;
+  lb.addEventListener("touchstart", ev => { sx = ev.touches[0].clientX; }, {passive: true});
+  lb.addEventListener("touchend", ev => { const dx = ev.changedTouches[0].clientX - sx; if (lb._show && Math.abs(dx) > 40) lb._show(dx < 0 ? 1 : -1); }, {passive: true});
+  function onKey(ev) {
+    if (ev.key === "Escape") close();
+    if (lb._show && ev.key === "ArrowRight") lb._show(1);
+    if (lb._show && ev.key === "ArrowLeft") lb._show(-1);
+  }
+  addEventListener("keydown", onKey);
+  stage.appendChild(lb);
+}
+
+/* ---------- views: #work / #about / #projects ---------- */
+
+function setNav(v) { document.querySelectorAll("[data-view]").forEach(a => a.toggleAttribute("aria-current", a.dataset.view === v)); }
+let view = "work";
+function updateLight() { stage.classList.toggle("light", view === "about" || !!WORKS[current].light); stage.classList.toggle("about", view === "about"); stage.classList.toggle("projects", view === "projects"); stage.classList.toggle("sheetview", view !== "work"); }
+
+/* About: photos appear where the cursor moves, then blur and fade; a sentence types itself along the curve */
+const polas = $("polas"), aboutView = document.querySelector(".aboutview");
+let photoNext = 0, lastSpawn = null, lastMove = 0;
+function spawnPhoto(x, y) {
+  const r = aboutView.getBoundingClientRect();
+  const fig = document.createElement("figure");
+  fig.className = "pola";
+  const w = 60 + Math.random() * 35;
+  fig.style.cssText = `left:${x}px;top:${y}px;width:${w}px;--r:${(Math.random() * 16 - 8).toFixed(1)}deg`;
+  fig.innerHTML = `<img src="${ABOUT_PHOTOS[photoNext]}" alt="">`;
+  photoNext = (photoNext + 1) % ABOUT_PHOTOS.length;
+  polas.appendChild(fig);
+  requestAnimationFrame(() => requestAnimationFrame(() => fig.classList.add("in")));
+  setTimeout(() => fig.classList.add("away"), 1400);
+  setTimeout(() => fig.classList.add("gone"), 3200);
+  setTimeout(() => fig.remove(), 4200);
+  while (polas.children.length > 14) polas.firstChild.remove();
+}
+aboutView.addEventListener("pointermove", e => {
+  const r = aboutView.getBoundingClientRect(), x = e.clientX - r.left, y = e.clientY - r.top;
+  lastMove = Date.now();
+  $("sqCursor").style.left = x + "px"; $("sqCursor").style.top = y + "px";
+  if (!lastSpawn || Math.hypot(x - lastSpawn.x, y - lastSpawn.y) > 80) { spawnPhoto(x, y); lastSpawn = {x, y}; }
+});
+/* when nobody moves the cursor (phones, idle), photos still pop up on their own */
+setInterval(() => {
+  if (view !== "about" || reduce || Date.now() - lastMove < 2500) return;
+  const r = aboutView.getBoundingClientRect();
+  spawnPhoto(r.width * (.12 + Math.random() * .76), r.height * (.1 + Math.random() * .8));
+}, 900);
+
+const PHRASES = ARC_WORDS.match(/[^.]+\./g).map(t => t.trim());
+const arcText = $("arcText");
+let phrase = 0, typed = 0, pauseUntil = 0, lastType = 0;
+function renderArc() {
+  const t = PHRASES[phrase], done = t.slice(0, Math.max(0, typed - 2)), fresh = t.slice(Math.max(0, typed - 2), typed);
+  arcText.innerHTML = `${esc(done)}<tspan class="new">${esc(fresh)}</tspan>`;
+}
+(function arcLoop(now) {
+  if (view === "about" && now > pauseUntil && now - lastType > 70) {
+    lastType = now;
+    const t = PHRASES[phrase];
+    if (typed < t.length) { typed++; renderArc(); if (typed === t.length) { pauseUntil = now + 1800; } }
+    else { phrase = (phrase + 1) % PHRASES.length; typed = 0; renderArc(); }
+  }
+  requestAnimationFrame(arcLoop);
+})(0);
+if (reduce) { typed = PHRASES[0].length; renderArc(); }
+$("insta").href = INSTAGRAM;
+
+function route() {
+  const h = location.hash.slice(1);
+  view = ["about", "projects"].includes(h) ? h : "work";
+  const sheet = $("projects");
+  sheet.classList.toggle("open", view === "projects"); sheet.setAttribute("aria-hidden", String(view !== "projects"));
+  setNav(view);
+  const ab = $("aboutSheet");
+  ab.classList.toggle("open", view === "about"); ab.setAttribute("aria-hidden", String(view !== "about"));
+  pane.classList.toggle("about", view === "about");
+  pane.classList.toggle("projects", view === "projects");
+  if (view !== "projects") grid.querySelectorAll("video").forEach(v => v.pause());
+  stage.querySelector(".lightbox")?.remove();
+  updateLight();
+  if (view === "about") { stopAll(); setNav("about"); }
+  else if (view === "projects") stopAll();
+  else if (playingIdx < 0) showClock();
+}
+addEventListener("hashchange", route);
+layout(); route();
+</script>
+</body>
+</html>
