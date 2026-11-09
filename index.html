@@ -233,7 +233,11 @@ a{color:inherit}
   .ab h2,.ab dt,.ab dd{grid-column:1}
   .ab dt{margin-bottom:8px}
   .aboutsheet{padding:80px 18px 40px}
-  .clockview{min-height:480px;padding:22px 18px}
+  .clockview{min-height:0;padding:18px 18px 16px}
+  .pane{min-height:0}
+  #clock{max-width:280px}
+  .slide.mfill-all .media img,.slide.mfill-all .media video,.slide.mfill-img .media img{object-fit:cover}
+  .slide.mfill-all .media img.bgblur,.slide.mfill-img .media img.bgblur{display:none}
   .infoview{padding:24px 18px 32px}
   .stage{height:88svh;min-height:540px;touch-action:pan-y}
   .midrow{grid-template-columns:1fr;padding:0 16px}
@@ -377,15 +381,15 @@ const ABOUT = {
 const DISCLAIMER = brand => `Independent spec concept created for portfolio purposes only. Not commissioned, sponsored, approved or endorsed by ${brand}, and not an official collaboration. ${brand} and related trademarks belong to their respective owners.`;
 /* One object per work. center: "picker" | {title, sub} | null */
 const WORKS = [
-  { no: "01", year: "2026", tint: "#D6E3EE", fit: "contain", bg: "#B1CDD9", blend: true,
+  { no: "01", year: "2026", mfill: "all", tint: "#D6E3EE", fit: "contain", bg: "#B1CDD9", blend: true,
     poster: "assets/poster-01.webp", video: "assets/video-01.mp4", alt: "Portrait with painted poppies and daisies",
     center: "picker", info: ABOUT, card: "AI Visuals" },
-  { no: "02", year: "2026", tint: "#D2DFEC", light: true, fit: "contain", bg: "#EFE3D0",
+  { no: "02", year: "2026", mfill: "all", tint: "#D2DFEC", light: true, fit: "contain", bg: "#EFE3D0",
     poster: "assets/poster-02.webp", video: "assets/video-02.mp4", alt: "Woman walking, wrapped in giant painted flowers",
     center: { title: "From painting to motion", sub: "Inspired by Martiros Saryan’s artwork." },
     info: { eyebrow: "02 · 2026", title: "From painting to motion", lead: "Inspired by Martiros Saryan’s artwork.",
       rows: [["Year", "2026"], ["Category", "AI Video"], ["Inspiration", "Martiros Saryan"]] }, card: "AI Video" },
-  { no: "03", year: "2026", tint: "#F1D8CC", light: true, fit: "contain", bg: "#EEE5D5",
+  { no: "03", year: "2026", mfill: "all", tint: "#F1D8CC", light: true, fit: "contain", bg: "#EEE5D5",
     poster: "assets/poster-03.webp", video: "assets/video-03.mp4", alt: "Woman in a green coat among painted lilacs",
     center: { title: "Art reimagined", sub: "Martiros Saryan — AI Animation." },
     info: { eyebrow: "03 · 2026", title: "Art reimagined", lead: "Martiros Saryan — AI Animation.",
@@ -396,7 +400,7 @@ const WORKS = [
     info: { eyebrow: "04 · 2026", title: "Hermès «Cuivreries» Scarf", lead: "Spec commercial concept.",
       rows: [["Year", "2026"], ["Category", "Commercial Film"], ["Type", "Spec concept · unofficial"], ["Disclaimer", DISCLAIMER("Hermès")]] }, card: "Commercial Film" },
   /* A work with several parts: arrows switch parts, a click plays that part's video. */
-  { no: "05", year: "2026", tint: "#EFE3CF", sound: true, light: true, fit: "contain", bg: "#F0E9DF",
+  { no: "05", year: "2026", mfill: "img", tint: "#EFE3CF", sound: true, light: true, fit: "contain", bg: "#F0E9DF",
     parts: [
       { poster: "assets/poster-05-1.webp", video: "assets/video-05-1.mp4", alt: "Christmas Film, part 1: two children looking at a toy train" },
       { poster: "assets/poster-05-2.webp", video: "assets/video-05-2.mp4", alt: "Christmas Film, part 2: “Will they steal it?”" },
@@ -410,7 +414,7 @@ const WORKS = [
     center: null,
     info: { eyebrow: "06 · 2026", title: "Dior", lead: "“When art meets art.” Fashion editorial, spec concept.",
       rows: [["Year", "2026"], ["Category", "Fashion Editorial"], ["Type", "Spec concept · unofficial"], ["Role", "Concept · Direction · AI Production"], ["Disclaimer", DISCLAIMER("Dior")]] }, card: "Fashion Editorial" },
-  { no: "07", year: "2026", tint: "#3A3836", sound: true, fit: "contain", bg: "#111111",
+  { no: "07", year: "2026", mfill: "img", tint: "#3A3836", sound: true, fit: "contain", bg: "#111111",
     poster: "assets/poster-07.webp", video: "assets/video-07.mp4", alt: "Social video: children's hobbies beside their adult lives",
     center: null,
     info: { eyebrow: "07 · 2026", title: "Don’t choose for them.", lead: "Choose to stand beside them. A film by Mariam Zulla.",
@@ -520,7 +524,7 @@ function showClock() {
 /* ---------- slides ---------- */
 const slidesEl = $("slides");
 slidesEl.innerHTML = WORKS.map((w, i) => `
-  <article class="slide${w.blend ? " blend" : ""}${w.light ? " light" : ""}${w.fit === "contain" ? " contain" : ""}" data-i="${i}" aria-label="Work ${w.no}"${w.bg ? ` style="background:${w.bg}"` : ""}>
+  <article class="slide${w.mfill ? " mfill-" + w.mfill : ""}${w.blend ? " blend" : ""}${w.light ? " light" : ""}${w.fit === "contain" ? " contain" : ""}" data-i="${i}" aria-label="Work ${w.no}"${w.bg ? ` style="background:${w.bg}"` : ""}>
     <div class="media" role="button" tabindex="0" aria-label="Play video ${w.no}">
       ${w.blend ? `<img class="bgblur" src="${w.parts[0].poster}" alt="" aria-hidden="true">` : ""}<img class="main" src="${w.parts[0].poster}" alt="${esc(w.parts[0].alt)}" ${i ? 'loading="lazy"' : ""}>
       <video ${w.parts[0].video ? `src="${w.parts[0].video}"` : ""} muted loop playsinline preload="${i < 2 ? "metadata" : "none"}"></video>
